@@ -39,9 +39,9 @@ A full-stack web application designed to manage a book collection. Built as a ha
 ---
 
 ## Outcome
-✨ Designing and implementing RESTful APIs using Spring Boot and Spring MVC.
-✨ Managing database entities and repositories using Spring Data JPA.
-✨ Handling asynchronous HTTP requests (fetch, GET, POST, PUT, DELETE) between a vanilla JavaScript frontend and a Java backend.
-✨ Managing build lifecycles, dependencies, and configuration via Maven and application.properties.
+ * Designing and implementing RESTful APIs using Spring Boot and Spring MVC.
+ * Managing database entities and repositories using Spring Data JPA.
+ * Handling asynchronous HTTP requests (fetch, GET, POST, PUT, DELETE) between a vanilla JavaScript frontend and a Java backend.
+ * Managing build lifecycles, dependencies, and configuration via Maven and application.properties.
 
 ---
