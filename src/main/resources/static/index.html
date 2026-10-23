@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Library Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 40px;
+        }
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        li {
+            background: #fafafa;
+            margin-bottom: 10px;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .action-buttons button {
+            margin-left: 5px;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        .edit-btn {
+            background-color: #ffc107;
+            color: black;
+        }
+        .edit-btn:hover {
+            background-color: #e0a800;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+        }
+        .delete-btn:hover {
+            background-color: #a71d2a;
+        }
+        #cancel-edit {
+            background-color: #6c757d;
+            display: none;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>📚 My Book Library</h2>
+        <p>Full-Stack CRUD Application (Spring Boot + JavaScript)</p>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <h3 id="form-title">Add a New Book</h3>
+        <input type="hidden" id="book-id">
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" placeholder="e.g., Clean Code">
+        </div>
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <input type="text" id="author" placeholder="e.g., Robert C. Martin">
+        </div>
+        <div class="form-group">
+            <label for="year">Publication Year:</label>
+            <input type="number" id="year" placeholder="e.g., 2008">
+        </div>
+        <button id="submit-btn" onclick="saveBook()">Add Book</button>
+        <button id="cancel-edit" onclick="resetForm()">Cancel Edit</button>
+
+        <h3>Library Collection</h3>
+        <ul id="book-list">
+            <!-- Books will load here dynamically -->
+        </ul>
+    </div>
+
+    <script>
+        const API_URL = '/api/books';
+
+        // Fetch and display all books (Read)
+        async function fetchBooks() {
+            try {
+                const response = await fetch(API_URL);
+                const books = await response.json();
+                const list = document.getElementById('book-list');
+                list.innerHTML = '';
+
+                if (books.length === 0) {
+                    list.innerHTML = '<li style="justify-content: center; color: #777;">No books found in the library. Add one above!</li>';
+                    return;
+                }
+
+                books.forEach(book => {
+                    list.innerHTML += `
+                        <div>
+                            <strong>${book.title}</strong> by ${book.author} (${book.publicationYear})
+                        </div>
+                        <div class="action-buttons">
+                            <button class="edit-btn" onclick="editBook(${book.id}, '${book.title}', '${book.author}', ${book.publicationYear})">Edit</button>
+                            <button class="delete-btn" onclick="deleteBook(${book.id})">Delete</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error fetching books:', error);
+            }
+        }
+
+        // Handle both Create (POST) and Update (PUT)
+        async function saveBook() {
+            const id = document.getElementById('book-id').value;
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const publicationYear = document.getElementById('year').value;
+
+            if (!title || !author || !publicationYear) {
+                alert('Please fill out all fields!');
+                return;
+            }
+
+            const bookData = { title, author, publicationYear };
+
+            if (id) {
+                // Update existing book (PUT)
+                await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookData)
+                });
+            } else {
+                // Create new book (POST)
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookData)
+                });
+            }
+
+            resetForm();
+            fetchBooks();
+        }
+
+        // Populate form with book data for editing
+        function editBook(id, title, author, year) {
+            document.getElementById('book-id').value = id;
+            document.getElementById('title').value = title;
+            document.getElementById('author').value = author;
+            document.getElementById('year').value = year;
+
+            document.getElementById('form-title').innerText = 'Edit Book';
+            document.getElementById('submit-btn').innerText = 'Update Book';
+            document.getElementById('cancel-edit').style.display = 'block';
+        }
+
+        // Reset form back to "Add" mode
+        function resetForm() {
+            document.getElementById('book-id').value = '';
+            document.getElementById('title').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById('year').value = '';
+
+            document.getElementById('form-title').innerText = 'Add a New Book';
+            document.getElementById('submit-btn').innerText = 'Add Book';
+            document.getElementById('cancel-edit').style.display = 'none';
+        }
+
+        // Delete a book (DELETE)
+        async function deleteBook(id) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            fetchBooks();
+        }
+
+        // Initial load
+        fetchBooks();
+    </script>
+
+</body>
+</html>
